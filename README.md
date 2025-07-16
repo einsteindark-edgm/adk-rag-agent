@@ -1,6 +1,6 @@
-# Vertex AI RAG Agent with ADK
+# Colombian Import Specialist Agent (Vertex AI RAG with ADK)
 
-This repository contains a Google Agent Development Kit (ADK) implementation of a Retrieval Augmented Generation (RAG) agent using Google Cloud Vertex AI, exposed via the A2A (Agent-to-Agent) protocol with Clean Architecture.
+This repository contains a Google Agent Development Kit (ADK) implementation of a specialized AI agent for Colombian import procedures and regulations, using Google Cloud Vertex AI RAG, exposed via the A2A (Agent-to-Agent) protocol with Clean Architecture.
 
 ## Architecture
 
@@ -106,14 +106,16 @@ sequenceDiagram
 
 ## Overview
 
-The Vertex AI RAG Agent allows you to:
+The Colombian Import Specialist Agent helps importers and businesses with:
 
-- Query document corpora with natural language questions
-- List available document corpora
-- Create new document corpora
-- Add new documents to existing corpora
-- Get detailed information about specific corpora
-- Delete corpora when they're no longer needed
+- Import requirements and documentation for specific products
+- Customs procedures and clearance processes
+- Tariffs, duties, and tax calculations
+- Restricted and prohibited items verification
+- Import licenses and permits requirements
+- Legal compliance with Colombian regulations
+
+The agent uses the `import_export` corpus, specifically the `rules_imports` document, which contains official Colombian import regulations.
 
 ## Project Structure
 
@@ -231,22 +233,32 @@ async def main():
     client = RAGAgentClient()
     await client.connect()
     
-    # List corpora
+    # Check if import_export corpus exists
     response = await client.send_message("List all available corpora")
     print(response)
     
-    # Create a corpus
-    response = await client.send_message("Create a new corpus called 'my-docs'")
-    print(response)
-    
-    # Add documents
+    # Query import requirements
     response = await client.send_message(
-        "Add data to my-docs from ['https://drive.google.com/file/d/YOUR_FILE_ID/view']"
+        "What are the requirements for importing textiles to Colombia?"
     )
     print(response)
     
-    # Query documents
-    response = await client.send_message("Query my-docs for information about AI")
+    # Check restrictions
+    response = await client.send_message(
+        "Are there restrictions on importing used vehicles to Colombia?"
+    )
+    print(response)
+    
+    # Get tariff information
+    response = await client.send_message(
+        "What are the import duties for electronic devices?"
+    )
+    print(response)
+    
+    # Customs procedures
+    response = await client.send_message(
+        "Explain the customs clearance process in Colombia"
+    )
     print(response)
     
     await client.close()
@@ -254,40 +266,45 @@ async def main():
 asyncio.run(main())
 ```
 
-## Using the Agent
+## Agent Capabilities
 
-The agent provides the following functionality through its tools:
+The agent specializes in Colombian import regulations and provides:
 
-### 1. Query Documents
-Allows you to ask questions and get answers from your document corpus:
-- Automatically retrieves relevant information from the specified corpus
-- Generates informative responses based on the retrieved content
+### 1. Import Requirements
+Get specific requirements for importing products to Colombia:
+- Documentation needed (commercial invoice, bill of lading, certificates)
+- Permits and licenses required for specific products
+- Special requirements for regulated items
 
-### 2. List Corpora
-Shows all available document corpora in your project:
-- Displays corpus names and basic information
-- Helps you understand what data collections are available
+### 2. Tariffs and Taxes
+Information about import costs:
+- Import duties by product category
+- VAT (IVA) calculations
+- Additional taxes and fees
 
-### 3. Create Corpus
-Create a new empty document corpus:
-- Specify a custom name for your corpus
-- Sets up the corpus with recommended embedding model configuration
-- Prepares the corpus for document ingestion
+### 3. Restricted Items
+Verify import restrictions:
+- Prohibited items list
+- Items requiring special permits
+- Sanitary and phytosanitary requirements
 
-### 4. Add New Data
-Add documents to existing corpora or create new ones:
-- Supports Google Drive URLs and GCS (Google Cloud Storage) paths
-- Automatically creates new corpora if they don't exist
+### 4. Customs Procedures
+Step-by-step guidance:
+- Import declaration process
+- Customs clearance timelines
+- Required forms and procedures
 
-### 5. Get Corpus Information
-Provides detailed information about a specific corpus:
-- Shows document count, file metadata, and creation time
-- Useful for understanding corpus contents and structure
+### 5. Legal Compliance
+Ensure compliance with Colombian law:
+- Import regulations and decrees
+- DIAN (Colombian tax authority) requirements
+- Legal references and updates
 
-### 6. Delete Corpus
-Removes corpora that are no longer needed:
-- Requires confirmation to prevent accidental deletion
-- Permanently removes the corpus and all associated files
+### 6. Document Management
+Manage the import regulations corpus:
+- Update regulations documents
+- Add new regulatory updates
+- Maintain current import rules
 
 ## Troubleshooting
 
@@ -323,14 +340,18 @@ async def test():
     client = RAGAgentClient()
     await client.connect()
     
-    # List existing corpora
-    print(await client.send_message('List all corpora'))
+    # Ensure import_export corpus exists
+    print(await client.send_message('Create import_export corpus if it doesn\'t exist'))
     
-    # Create a test corpus
-    print(await client.send_message('Create a corpus called test-docs'))
+    # Quick import query
+    print(await client.send_message(
+        'What documents do I need to import machinery to Colombia?'
+    ))
     
-    # Query (will return no results for empty corpus)
-    print(await client.send_message('Query test-docs about AI'))
+    # Check restrictions
+    print(await client.send_message(
+        'Is it legal to import used clothing to Colombia?'
+    ))
     
     await client.close()
 

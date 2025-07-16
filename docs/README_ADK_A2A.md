@@ -1,6 +1,10 @@
-# ADK + A2A + Clean Architecture Documentation
+# Colombian Import Specialist - Technical Documentation
 
-This documentation set covers the integration of Google ADK (Agent Development Kit) agents with Clean Architecture using the A2A (Agent-to-Agent) protocol.
+This documentation set covers the implementation of a Colombian Import Specialist agent using Google ADK (Agent Development Kit) with Clean Architecture and the A2A (Agent-to-Agent) protocol.
+
+## Agent Specialization
+
+This agent is specifically designed to provide information about Colombian import procedures, using the `import_export` corpus with the `rules_imports` document containing official regulations.
 
 ## 📚 Documentation Files
 

@@ -9,7 +9,7 @@ from a2a.types import Part, TextPart
 
 
 class RAGAgentClient:
-    """Client for interacting with RAG Agent via A2A protocol."""
+    """Client for interacting with Colombian Import Specialist via A2A protocol."""
     
     def __init__(self, agent_url: str = "http://localhost:8080"):
         """Initialize with agent URL.
@@ -180,14 +180,16 @@ class RAGAgentInteraction:
     async def run_tests(self):
         """Run automated tests.
         
-        AUTOMATED: Tests common RAG scenarios.
+        AUTOMATED: Tests common import query scenarios.
         """
         test_messages = [
             "List all available corpora",
-            "Create a new corpus called 'test-corpus'",
-            "Get information about test-corpus",
-            "Query test-corpus for information about AI",
-            "Delete the test-corpus"
+            "Create the import_export corpus if it doesn't exist",
+            "What are the requirements for importing textiles to Colombia?",
+            "What documents do I need to import electronics?",
+            "Are there restrictions on importing used vehicles?",
+            "What are the import duties for machinery?",
+            "What is the customs clearance process in Colombia?"
         ]
         
         try:
@@ -224,8 +226,10 @@ async def main():
 
 
 if __name__ == "__main__":
-    print("🚀 Vertex AI RAG Agent Client (A2A)")
+    print("🚢 Colombian Import Specialist Client (A2A)")
     print("Make sure the A2A server is running: python -m app.main.a2a_main")
     print("Run with --test flag for automated tests\n")
+    print("Note: Ensure the 'import_export' corpus exists with 'rules_imports' document")
+    print("for accurate import regulation responses.\n")
     
     asyncio.run(main())

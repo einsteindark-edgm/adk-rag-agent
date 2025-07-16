@@ -1,15 +1,15 @@
 from a2a.types import AgentCard, AgentCapabilities, AgentSkill
 
 def get_agent_card() -> AgentCard:
-    """Get the agent card for our RAG agent.
+    """Get the agent card for our Colombian Import Specialist agent.
     
     CRITICAL: This metadata is served at /.well-known/agent.json
     and tells other agents what we can do.
     """
     return AgentCard(
         # Basic metadata
-        name="Vertex AI RAG Agent",
-        description="AI agent for managing and querying Vertex AI RAG corpora",
+        name="Colombian Import Specialist",
+        description="AI agent specialized in Colombian import procedures and regulations",
         version="1.0.0",
         url="http://localhost:8080/",
         
@@ -23,52 +23,65 @@ def get_agent_card() -> AgentCard:
             multimodal=True,
             customMetadata={
                 "supported_operations": [
-                    "query_corpus",
-                    "list_corpora", 
-                    "create_corpus",
-                    "add_documents",
-                    "get_corpus_info",
-                    "delete_document",
-                    "delete_corpus"
+                    "query_import_regulations",
+                    "get_import_requirements",
+                    "check_restricted_items",
+                    "calculate_tariffs",
+                    "list_required_documents",
+                    "corpus_management"
                 ],
                 "llm_model": "gemini-2.0-flash-exp",
-                "rag_backend": "vertex-ai"
+                "rag_backend": "vertex-ai",
+                "specialization": "colombian_imports",
+                "primary_corpus": "import_export",
+                "primary_document": "rules_imports"
             }
         ),
         
         # Skills
         skills=[
             AgentSkill(
-                id="rag_query",
-                name="RAG Query",
-                description="Query documents from Vertex AI RAG corpus",
-                tags=["rag", "search", "retrieval"],
+                id="import_requirements",
+                name="Import Requirements",
+                description="Get requirements for importing specific products to Colombia",
+                tags=["imports", "requirements", "colombia", "customs"],
                 examples=[
-                    "Search for information about Clean Architecture",
-                    "What documents are available in the corpus?",
-                    "Find information about agent protocols"
+                    "What are the requirements for importing textiles to Colombia?",
+                    "What documents do I need to import electronics?",
+                    "What permits are required for importing food products?"
                 ]
             ),
             AgentSkill(
-                id="corpus_management",
-                name="Corpus Management",
-                description="Manage Vertex AI RAG corpora - create, list, delete",
-                tags=["rag", "corpus", "management"],
+                id="tariffs_taxes",
+                name="Tariffs and Taxes",
+                description="Information about import duties, VAT, and other taxes for Colombia",
+                tags=["tariffs", "taxes", "duties", "colombia"],
                 examples=[
-                    "List all available corpora",
-                    "Create a new corpus named 'technical-docs'",
-                    "Get information about corpus '123456'"
+                    "What are the import duties for machinery?",
+                    "How is VAT calculated on imports?",
+                    "What is the tariff for importing vehicles?"
                 ]
             ),
             AgentSkill(
-                id="document_management",
-                name="Document Management",
-                description="Add and remove documents from RAG corpora",
-                tags=["rag", "documents", "ingestion"],
+                id="restricted_items",
+                name="Restricted Items",
+                description="Check restrictions and prohibitions for importing to Colombia",
+                tags=["restrictions", "prohibited", "colombia", "regulations"],
                 examples=[
-                    "Add this PDF to the corpus",
-                    "Remove document XYZ from the corpus",
-                    "Import all markdown files from this folder"
+                    "Is it legal to import used clothing to Colombia?",
+                    "What items are prohibited for import?",
+                    "Are there restrictions on importing chemicals?"
+                ]
+            ),
+            AgentSkill(
+                id="customs_procedures",
+                name="Customs Procedures",
+                description="Step-by-step customs clearance procedures for Colombia",
+                tags=["customs", "procedures", "clearance", "colombia"],
+                examples=[
+                    "What is the customs clearance process?",
+                    "How long does customs clearance take?",
+                    "What are the steps for import declaration?"
                 ]
             )
         ]

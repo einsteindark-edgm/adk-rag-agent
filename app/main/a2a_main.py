@@ -80,7 +80,7 @@ async def _run_server_async():
     3. Handle shutdown gracefully
     """
     try:
-        logger.info("🚀 Starting A2A RAG Agent Server...")
+        logger.info("🚢 Starting Colombian Import Specialist Server...")
         
         # Create app
         app = create_a2a_app()
@@ -97,8 +97,9 @@ async def _run_server_async():
         server = Server(config)
         
         # Run server
-        logger.info(f"🌟 A2A server running at http://{settings.HOST}:{settings.PORT}")
+        logger.info(f"🌟 Colombian Import Specialist running at http://{settings.HOST}:{settings.PORT}")
         logger.info("📄 Agent card available at /.well-known/agent.json")
+        logger.info("📦 Primary corpus: import_export | Primary document: rules_imports")
         await server.serve()
         
     except KeyboardInterrupt:
