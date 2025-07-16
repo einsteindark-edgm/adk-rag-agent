@@ -11,10 +11,10 @@ from a2a.types import Part, TextPart
 class RAGAgentClient:
     """Client for interacting with Colombian Import Specialist via A2A protocol."""
     
-    def __init__(self, agent_url: str = "http://localhost:8080"):
+    def __init__(self, agent_url: str = "http://localhost:8006"):
         """Initialize with agent URL.
         
-        DEFAULT: Assumes A2A server at localhost:8080
+        DEFAULT: Assumes A2A server at localhost:8006
         """
         self.agent_url = agent_url
         self.httpx_client = httpx.AsyncClient(timeout=30.0)
@@ -141,7 +141,7 @@ class RAGAgentClient:
 class RAGAgentInteraction:
     """Handles interaction with the RAG Agent."""
     
-    def __init__(self, agent_url: str = "http://localhost:8080"):
+    def __init__(self, agent_url: str = "http://localhost:8006"):
         """Initialize with agent URL."""
         self.client = RAGAgentClient(agent_url)
     

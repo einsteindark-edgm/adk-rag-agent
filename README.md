@@ -211,7 +211,7 @@ Before running the agent, you need to set up authentication with Google Cloud:
 python -m app.main.a2a_main
 ```
 
-The server will start on `http://localhost:8080`
+The server will start on `http://localhost:8006`
 
 ### Using the A2A Client
 

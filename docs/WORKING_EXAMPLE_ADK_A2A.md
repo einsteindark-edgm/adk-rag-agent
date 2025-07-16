@@ -292,7 +292,7 @@ def main():
     uvicorn.run(
         a2a,
         host="0.0.0.0",
-        port=8080,
+        port=8006,
         log_level="info"
     )
 
@@ -314,7 +314,7 @@ import httpx
 class AgentClient:
     """Client for A2A agent communication."""
     
-    def __init__(self, agent_url: str = "http://localhost:8080"):
+    def __init__(self, agent_url: str = "http://localhost:8006"):
         self.agent_url = agent_url
         self.httpx_client = httpx.AsyncClient(timeout=30.0)
         self.session_id = f"session-{uuid.uuid4().hex[:8]}"
@@ -444,7 +444,7 @@ python client.py
 INFO:     Started server process [12345]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8080
+INFO:     Uvicorn running on http://0.0.0.0:8006
 ```
 
 **Client:**

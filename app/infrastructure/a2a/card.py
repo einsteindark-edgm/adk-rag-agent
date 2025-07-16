@@ -11,7 +11,7 @@ def get_agent_card() -> AgentCard:
         name="Colombian Import Specialist",
         description="AI agent specialized in Colombian import procedures and regulations",
         version="1.0.0",
-        url="http://localhost:8080/",
+        url="http://localhost:8006/",
         
         # Input/output modes
         defaultInputModes=["text/plain"],

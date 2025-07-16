@@ -86,11 +86,11 @@ async def _run_server_async():
         app = create_a2a_app()
         
         # Configure server
-        # CRITICAL: Must use port 8080 for A2A by default
+        # CRITICAL: Using port 8006 for A2A server
         config = Config(
             app=app.build(),  # Note: A2AStarletteApplication.build() returns the ASGI app
             host=settings.HOST,  # Default: 0.0.0.0
-            port=settings.PORT,  # Default: 8080
+            port=settings.PORT,  # Default: 8006
             log_level="info"
         )
         

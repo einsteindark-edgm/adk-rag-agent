@@ -160,7 +160,7 @@ from app.infrastructure.web import agent
 def main():
     """Run A2A server."""
     a2a = A2A(agent)
-    uvicorn.run(a2a, host="0.0.0.0", port=8080, log_level="info")
+    uvicorn.run(a2a, host="0.0.0.0", port=8006, log_level="info")
 
 if __name__ == "__main__":
     main()
@@ -175,7 +175,7 @@ session = runner.create_session()
 response = session.run(message)
 
 # After (Via A2A Client)
-client = A2AClient("http://localhost:8080")
+client = A2AClient("http://localhost:8006")
 await client.connect()
 response = await client.send_message("Hello")
 ```
@@ -197,7 +197,7 @@ response = await client.send_message("Hello")
 python -m app.main.a2a_main
 
 # 2. Test with curl
-curl http://localhost:8080/.well-known/agent.json
+curl http://localhost:8006/.well-known/agent.json
 
 # 3. Test with client
 python -c "
@@ -226,7 +226,7 @@ If you need to rollback:
 # Dual mode support
 if USE_A2A:
     # Run via A2A server
-    uvicorn.run(A2A(agent), host="0.0.0.0", port=8080)
+    uvicorn.run(A2A(agent), host="0.0.0.0", port=8006)
 else:
     # Run direct ADK
     runner = Runner(tools=[...])

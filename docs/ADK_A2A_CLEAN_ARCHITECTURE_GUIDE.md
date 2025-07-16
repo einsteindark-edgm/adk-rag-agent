@@ -105,7 +105,7 @@ def main():
     uvicorn.run(
         a2a,
         host="0.0.0.0",
-        port=8080,
+        port=8006,
         log_level="info"
     )
 
@@ -293,7 +293,7 @@ import httpx
 class A2AClient:
     """Client for A2A protocol communication."""
     
-    def __init__(self, agent_url: str = "http://localhost:8080"):
+    def __init__(self, agent_url: str = "http://localhost:8006"):
         """Initialize with agent URL."""
         self.agent_url = agent_url
         self.httpx_client = httpx.AsyncClient(timeout=30.0)
@@ -489,7 +489,7 @@ from app.infrastructure.tools import your_tool
 
 ### 1. Test Server Health
 ```bash
-curl http://localhost:8080/.well-known/agent.json
+curl http://localhost:8006/.well-known/agent.json
 ```
 
 ### 2. Test with Simple Client

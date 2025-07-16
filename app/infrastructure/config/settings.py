@@ -7,7 +7,7 @@ load_dotenv()
 
 # Server settings
 HOST = os.getenv("A2A_HOST", "0.0.0.0")
-PORT = int(os.getenv("A2A_PORT", "8085"))
+PORT = int(os.getenv("A2A_PORT", "8006"))
 
 # Vertex AI settings
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")

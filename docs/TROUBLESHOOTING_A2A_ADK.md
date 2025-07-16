@@ -197,7 +197,7 @@ session = runner.create_session()
 # Verify this works before adding A2A
 
 # Test 2: A2A server health
-curl http://localhost:8080/.well-known/agent.json
+curl http://localhost:8006/.well-known/agent.json
 
 # Test 3: Simple message
 response = await client.send_message("Hello")
@@ -235,7 +235,7 @@ for part in message.parts:
 
 ## Quick Diagnosis Checklist
 
-- [ ] Is the A2A server running? Check with `curl http://localhost:8080/.well-known/agent.json`
+- [ ] Is the A2A server running? Check with `curl http://localhost:8006/.well-known/agent.json`
 - [ ] Are all dependencies installed? Check `pip list | grep -E "a2a-sdk|google-adk"`
 - [ ] Are tools properly imported? Check executor's `_get_tools()` method
 - [ ] Is logging enabled? Add `logging.basicConfig(level=logging.DEBUG)`
@@ -248,7 +248,7 @@ for part in message.parts:
 ### Server Won't Start
 ```bash
 # Check port availability
-lsof -i :8080
+lsof -i :8006
 
 # Try different port
 uvicorn.run(a2a, host="0.0.0.0", port=8081)

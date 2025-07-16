@@ -10,7 +10,7 @@ graph TB
     end
     
     subgraph "A2A Server Layer"
-        A2AS[A2A Server<br/>Port 8080]
+        A2AS[A2A Server<br/>Port 8006]
         UVIC[Uvicorn<br/>ASGI Server]
     end
     

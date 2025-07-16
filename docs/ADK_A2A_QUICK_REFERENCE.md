@@ -9,7 +9,7 @@ import uvicorn
 from a2a import A2A
 from app.infrastructure.web import agent
 
-uvicorn.run(A2A(agent), host="0.0.0.0", port=8080)
+uvicorn.run(A2A(agent), host="0.0.0.0", port=8006)
 ```
 
 ### 2. Agent Definition
@@ -108,7 +108,7 @@ text = response["result"]["artifacts"][0]["parts"][0]["text"]
 
 ```bash
 # Check server health
-curl http://localhost:8080/.well-known/agent.json
+curl http://localhost:8006/.well-known/agent.json
 
 # Run server
 python -m app.main.a2a_main
