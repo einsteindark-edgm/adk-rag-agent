@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import logging
 from collections.abc import AsyncGenerator
 
@@ -145,11 +146,18 @@ class RAGAgentExecutor(AgentExecutor):
             session_id=session_id
         )
         if session is None:
-            session = self.runner.session_service.create_session(
+            # create_session might be async, so we need to check and await if necessary
+            session_or_coro = self.runner.session_service.create_session(
                 app_name=self.runner.app_name,
                 user_id="rag_agent_user",
                 session_id=session_id,
             )
+            # Check if it's a coroutine and await it
+            import inspect
+            if inspect.iscoroutine(session_or_coro):
+                session = await session_or_coro
+            else:
+                session = session_or_coro
         if session is None:
             raise RuntimeError(f"Failed to get or create session: {session_id}")
         return session
