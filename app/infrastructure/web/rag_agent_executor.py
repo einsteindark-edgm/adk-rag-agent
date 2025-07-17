@@ -65,7 +65,18 @@ class RAGAgentExecutor(AgentExecutor):
         """
         # Ensure session exists
         session_obj = await self._upsert_session(session_id)
-        session_id = session_obj.id
+        # Debug logging
+        logger.debug(f"Session object type: {type(session_obj)}")
+        logger.debug(f"Session object: {session_obj}")
+        
+        # Extract session ID - handle both Session objects and dicts
+        if hasattr(session_obj, 'id'):
+            session_id = session_obj.id
+        elif isinstance(session_obj, dict) and 'id' in session_obj:
+            session_id = session_obj['id']
+        else:
+            logger.error(f"Unexpected session object type: {type(session_obj)}")
+            raise ValueError(f"Cannot extract session ID from {type(session_obj)}")
 
         # Run the agent and process events
         async for event in self._run_agent(session_id, new_message):
@@ -140,24 +151,29 @@ class RAGAgentExecutor(AgentExecutor):
 
     async def _upsert_session(self, session_id: str):
         """Get or create a session for the conversation."""
-        session = self.runner.session_service.get_session(
+        # Helper function to handle potential coroutines
+        async def _await_if_needed(obj):
+            if inspect.iscoroutine(obj):
+                return await obj
+            return obj
+        
+        # Get session (might be async)
+        session_obj = self.runner.session_service.get_session(
             app_name=self.runner.app_name, 
             user_id="rag_agent_user", 
             session_id=session_id
         )
+        session = await _await_if_needed(session_obj)
+        
         if session is None:
-            # create_session might be async, so we need to check and await if necessary
-            session_or_coro = self.runner.session_service.create_session(
+            # Create session (might be async)
+            session_obj = self.runner.session_service.create_session(
                 app_name=self.runner.app_name,
                 user_id="rag_agent_user",
                 session_id=session_id,
             )
-            # Check if it's a coroutine and await it
-            import inspect
-            if inspect.iscoroutine(session_or_coro):
-                session = await session_or_coro
-            else:
-                session = session_or_coro
+            session = await _await_if_needed(session_obj)
+            
         if session is None:
             raise RuntimeError(f"Failed to get or create session: {session_id}")
         return session
