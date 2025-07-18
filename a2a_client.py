@@ -1,4 +1,4 @@
-"""Test client for Vertex AI RAG Agent using A2A protocol."""
+"""Test client for Customer Communication Agent using A2A protocol."""
 import asyncio
 import sys
 import json
@@ -8,8 +8,8 @@ import httpx
 from a2a.types import Part, TextPart
 
 
-class RAGAgentClient:
-    """Client for interacting with Colombian Import Specialist via A2A protocol."""
+class CustomerTrackingClient:
+    """Client for interacting with Customer Communication Agent via A2A protocol."""
     
     def __init__(self, agent_url: str = "http://localhost:8006"):
         """Initialize with agent URL.
@@ -138,23 +138,27 @@ class RAGAgentClient:
         await self.httpx_client.aclose()
 
 
-class RAGAgentInteraction:
-    """Handles interaction with the RAG Agent."""
+class CustomerTrackingInteraction:
+    """Handles interaction with the Customer Communication Agent."""
     
     def __init__(self, agent_url: str = "http://localhost:8006"):
         """Initialize with agent URL."""
-        self.client = RAGAgentClient(agent_url)
+        self.client = CustomerTrackingClient(agent_url)
     
     async def interactive_session(self):
         """Run interactive session with the agent.
         
         INTERACTIVE: User types messages, sees responses.
         """
-        print("🔗 Connecting to RAG agent...")
+        print("🔗 Connecting to Customer Communication Agent...")
         
         try:
             await self.client.connect()
             print("✅ Connected! Type 'exit' to quit.\n")
+            print("💡 Example queries:")
+            print("   - Where is my package ABC123?")
+            print("   - Why is my shipment XYZ789 delayed?")
+            print("   - When will my package arrive now?\n")
             
             while True:
                 # Get user input
@@ -180,27 +184,64 @@ class RAGAgentInteraction:
     async def run_tests(self):
         """Run automated tests.
         
-        AUTOMATED: Tests common import query scenarios.
+        AUTOMATED: Tests common customer service scenarios.
         """
-        test_messages = [
-            "List all available corpora",
-            "Create the import_export corpus if it doesn't exist",
-            "What are the requirements for importing textiles to Colombia?",
-            "What documents do I need to import electronics?",
-            "Are there restrictions on importing used vehicles?",
-            "What are the import duties for machinery?",
-            "What is the customs clearance process in Colombia?"
+        test_scenarios = [
+            # Basic status inquiry
+            {
+                "message": "What's the status of my shipment ABC123?",
+                "description": "Basic shipment status inquiry"
+            },
+            # Delay inquiry
+            {
+                "message": "Why is my package ABC123 delayed?",
+                "description": "Customer asking about delay reason"
+            },
+            # ETA update
+            {
+                "message": "When will my shipment ABC123 arrive now?",
+                "description": "Request for updated delivery time"
+            },
+            # Frustrated customer
+            {
+                "message": "My shipment ABC123 is severely delayed! This is unacceptable!",
+                "description": "Handling frustrated customer"
+            },
+            # Non-existent shipment
+            {
+                "message": "Where is my package ZZZ999?",
+                "description": "Invalid ticket ID handling"
+            },
+            # Another valid shipment
+            {
+                "message": "Can you check the status of XYZ789?",
+                "description": "Status check for different shipment"
+            },
+            # Proactive update request
+            {
+                "message": "Generate a delay notification for ABC123 due to heavy traffic",
+                "description": "Creating proactive customer update"
+            },
+            # Compensation inquiry
+            {
+                "message": "What compensation can you offer for the delay of ABC123?",
+                "description": "Customer asking about compensation"
+            }
         ]
         
         try:
             await self.client.connect()
             print("✅ Connected to agent\n")
+            print("Running automated tests...\n")
             
-            for msg in test_messages:
-                print(f"📝 Test: {msg}")
-                response = await self.client.send_message(msg)
-                print(f"✅ Response: {response}\n")
+            for i, scenario in enumerate(test_scenarios, 1):
+                print(f"📝 Test {i}/{len(test_scenarios)}: {scenario['description']}")
+                print(f"   Message: \"{scenario['message']}\"")
+                response = await self.client.send_message(scenario['message'])
+                print(f"   Response: {response}\n")
                 await asyncio.sleep(1)  # Rate limiting
+                
+            print("✅ All tests completed!")
                 
         except Exception as e:
             print(f"❌ Test failed: {e}")
@@ -215,7 +256,7 @@ async def main():
     - python3 a2a_client.py          # Interactive mode
     - python3 a2a_client.py --test   # Run automated tests
     """
-    interaction = RAGAgentInteraction()
+    interaction = CustomerTrackingInteraction()
     
     if len(sys.argv) > 1 and sys.argv[1] == "--test":
         # Run automated tests
@@ -226,10 +267,11 @@ async def main():
 
 
 if __name__ == "__main__":
-    print("🚢 Colombian Import Specialist Client (A2A)")
-    print("Make sure the A2A server is running: python -m app.main.a2a_main")
+    print("📦 Customer Communication Agent Client (A2A)")
+    print("Make sure the A2A server is running: python __main__.py")
     print("Run with --test flag for automated tests\n")
-    print("Note: Ensure the 'import_export' corpus exists with 'rules_imports' document")
-    print("for accurate import regulation responses.\n")
+    print("Available test shipments:")
+    print("  - ABC123: Miami → New York (delayed)")
+    print("  - XYZ789: Los Angeles → Chicago (in transit)\n")
     
     asyncio.run(main())

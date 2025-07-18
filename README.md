@@ -1,6 +1,16 @@
-# Colombian Import Specialist Agent (Vertex AI RAG with ADK)
+# Customer Communication Agent for Shipment Tracking
 
-This repository contains a Google Agent Development Kit (ADK) implementation of a specialized AI agent for Colombian import procedures and regulations, using Google Cloud Vertex AI RAG, exposed via the A2A (Agent-to-Agent) protocol with Clean Architecture.
+This repository contains a Google Agent Development Kit (ADK) implementation of an AI agent specialized in customer communication for shipment tracking and anomaly updates, exposed via the A2A (Agent-to-Agent) protocol.
+
+## Overview
+
+The Customer Communication Agent provides automated customer service for shipment tracking, including:
+
+- Real-time shipment status updates
+- Anomaly detection and communication
+- ETA calculations and updates
+- Professional customer messaging with appropriate tone
+- Proactive delay notifications
 
 ## Architecture
 
@@ -14,31 +24,32 @@ graph TB
     end
     
     subgraph "A2A Server Layer"
-        A2AS[A2A Server<br/>Port 8080]
+        A2AS[A2A Server<br/>Port 8006]
         UVIC[Uvicorn<br/>ASGI Server]
     end
     
     subgraph "Clean Architecture"
         subgraph "Infrastructure Layer"
-            EXE[RagAgentExecutor<br/>A2A Executor]
-            TOOLS[ADK Tools<br/>- list_corpora<br/>- create_corpus<br/>- add_data<br/>- rag_query<br/>- etc.]
-            CONFIG[Configuration<br/>- Settings<br/>- RAG Config]
+            EXE[RAGAgentExecutor<br/>A2A Executor]
+            AGENT[Customer Communication<br/>Agent]
+            TOOLS[ADK Tools<br/>- check_shipment_status<br/>- get_anomaly_details<br/>- calculate_new_eta<br/>- generate_customer_message]
+            CONFIG[Configuration<br/>- Settings<br/>- Environment]
         end
         
         subgraph "Domain Layer"
-            ENT[Entities<br/>- Corpus<br/>- Document]
+            ENT[Entities<br/>- Shipment<br/>- Anomaly<br/>- CustomerUpdate]
             EXC[Exceptions<br/>Domain Errors]
         end
     end
     
     subgraph "Google ADK Layer"
         RUNNER[ADK Runner<br/>Session Management]
-        LLM[LLM Integration<br/>Gemini]
+        LLM[LLM Integration<br/>Gemini 2.0]
     end
     
-    subgraph "Google Cloud Services"
-        VAI[Vertex AI<br/>RAG Service]
-        GCS[Google Cloud<br/>Storage]
+    subgraph "External Services"
+        DB[(Database<br/>Shipment Data)]
+        API[External APIs<br/>Tracking Systems]
     end
     
     A2AC --> HTTPC
@@ -46,10 +57,10 @@ graph TB
     A2AS --> UVIC
     UVIC --> EXE
     EXE --> RUNNER
-    EXE --> TOOLS
-    RUNNER --> LLM
-    TOOLS --> VAI
-    VAI --> GCS
+    RUNNER --> AGENT
+    AGENT --> TOOLS
+    TOOLS --> DB
+    TOOLS --> API
     TOOLS -.-> CONFIG
     TOOLS -.-> ENT
     
@@ -57,20 +68,23 @@ graph TB
     style A2AS fill:#e1e5f5
     style EXE fill:#f5e1e1
     style RUNNER fill:#f5f5e1
-    style VAI fill:#e5e1f5
+    style AGENT fill:#e5e1f5
 ```
 
-### Sequence Diagram - Message Processing
+### Sequence Diagram - Customer Query Processing
 
 ```mermaid
 sequenceDiagram
+    participant Customer as Customer
     participant Client as A2A Client
     participant Server as A2A Server
-    participant Executor as RagAgentExecutor
+    participant Executor as RAGAgentExecutor
     participant Runner as ADK Runner
-    participant Tool as ADK Tool
-    participant VAI as Vertex AI
+    participant Agent as Customer Agent
+    participant Tools as Tools
+    participant DB as Database
 
+    Customer->>Client: "Where is my package ABC123?"
     Client->>Server: JSON-RPC Request<br/>{method: "message/send"}
     Server->>Executor: execute()<br/>(session_id, messages, context, updater)
     
@@ -85,130 +99,190 @@ sequenceDiagram
     Executor->>Executor: await updater.start_work()
     
     Executor->>Runner: session.run_async(message)
+    Runner->>Agent: Process customer query
     
-    loop Process Events
-        Runner-->>Executor: Event Stream
-        alt Tool Call Event
-            Runner->>Tool: Execute tool
-            Tool->>VAI: API Call
-            VAI-->>Tool: Response
-            Tool-->>Runner: Tool Result
-        else Final Response
-            Note over Executor: Convert ADK response to A2A format
-            Executor->>Executor: await updater.add_artifact(parts)
-            Executor->>Executor: await updater.complete()
-        end
-    end
+    Agent->>Tools: check_shipment_status("ABC123")
+    Tools->>DB: Query shipment data
+    DB-->>Tools: Shipment details
+    Tools-->>Agent: Status: In transit, Location: Miami
+    
+    Agent->>Tools: get_anomaly_details("ABC123")
+    Tools->>DB: Query anomalies
+    DB-->>Tools: Anomaly: Weather delay
+    Tools-->>Agent: 2-hour delay due to weather
+    
+    Agent->>Tools: calculate_new_eta(shipment, anomaly)
+    Tools-->>Agent: New ETA: Tomorrow 3:00 PM
+    
+    Agent->>Tools: generate_customer_message(context)
+    Tools-->>Agent: Formatted message with apologetic tone
+    
+    Agent-->>Runner: Final response
+    Runner-->>Executor: Event Stream with response
+    Executor->>Executor: await updater.add_artifact(parts)
+    Executor->>Executor: await updater.complete()
     
     Executor-->>Server: Task Completed
-    Server-->>Client: JSON-RPC Response<br/>{result: {artifacts: [...]}}
+    Server-->>Client: JSON-RPC Response
+    Client-->>Customer: "Your package ABC123 is currently in Miami..."
 ```
 
-## Overview
+### Sequence Diagram - Proactive Anomaly Notification
 
-The Colombian Import Specialist Agent helps importers and businesses with:
+```mermaid
+sequenceDiagram
+    participant System as Monitoring System
+    participant Server as A2A Server
+    participant Agent as Customer Agent
+    participant Tools as Tools
+    participant DB as Database
+    participant Notif as Notification Service
 
-- Import requirements and documentation for specific products
-- Customs procedures and clearance processes
-- Tariffs, duties, and tax calculations
-- Restricted and prohibited items verification
-- Import licenses and permits requirements
-- Legal compliance with Colombian regulations
+    System->>Server: Anomaly detected for shipment XYZ789
+    Server->>Agent: Process anomaly event
+    
+    Agent->>Tools: get_anomaly_details("XYZ789")
+    Tools->>DB: Query anomaly data
+    DB-->>Tools: Severe traffic delay (4+ hours)
+    Tools-->>Agent: Anomaly details
+    
+    Agent->>Tools: check_shipment_status("XYZ789")
+    Tools->>DB: Query shipment
+    DB-->>Tools: High-value, time-sensitive
+    Tools-->>Agent: Shipment profile
+    
+    Agent->>Tools: calculate_new_eta(shipment, anomaly)
+    Tools-->>Agent: Delay: 5 hours, New ETA: 11:00 PM
+    
+    Note over Agent: Determine tone: Urgent + Apologetic<br/>Offer compensation (delay > 4 hours)
+    
+    Agent->>Tools: generate_customer_message({<br/>  tone: ["urgent", "apologetic"],<br/>  offer_compensation: true<br/>})
+    Tools-->>Agent: Formatted urgent notification
+    
+    Agent->>Notif: Send notification to customer
+    Notif-->>Agent: Notification sent
+    
+    Agent->>DB: Log customer communication
+```
 
-The agent uses the `import_export` corpus, specifically the `rules_imports` document, which contains official Colombian import regulations.
+## Features
+
+### Core Capabilities
+
+1. **Shipment Status Tracking**
+   - Real-time location updates
+   - Current ETA information
+   - Delivery progress tracking
+
+2. **Anomaly Management**
+   - Weather delays
+   - Traffic conditions
+   - Customs issues
+   - Technical problems
+
+3. **Customer Communication**
+   - Tone-appropriate messaging
+   - Multi-language support (if configured)
+   - Proactive notifications
+   - Complaint handling
+
+4. **ETA Calculations**
+   - Dynamic recalculation based on conditions
+   - Consideration of multiple factors
+   - Realistic time estimates
 
 ## Project Structure
 
 ```
-adk-rag-agent/
+agent-customer-tracking/
 ├── app/                        # Main application code
-│   ├── domain/                 # Domain layer (entities, exceptions)
+│   ├── domain/                 # Domain layer
+│   │   └── entities/          # Business entities
+│   │       ├── shipment.py    # Shipment model
+│   │       ├── anomaly.py     # Anomaly model
+│   │       └── customer_update.py  # Customer update model
 │   ├── infrastructure/         # Infrastructure layer
+│   │   ├── agent.py           # ADK agent definition
 │   │   ├── tools/             # ADK tools implementation
-│   │   ├── web/               # A2A executor and web components
+│   │   │   ├── check_shipment_status.py
+│   │   │   ├── get_anomaly_details.py
+│   │   │   ├── calculate_new_eta.py
+│   │   │   └── generate_customer_message.py
+│   │   ├── web/               # A2A executor
+│   │   ├── a2a/               # A2A card configuration
 │   │   └── config/            # Configuration files
 │   └── main/                  # Entry points
 │       └── a2a_main.py        # A2A server
-├── docs/                      # Documentation
-│   ├── ADK_A2A_CLEAN_ARCHITECTURE_GUIDE.md
-│   ├── MIGRATION_GUIDE_ADK_TO_A2A.md
-│   ├── TROUBLESHOOTING_A2A_ADK.md
-│   └── WORKING_EXAMPLE_ADK_A2A.md
-├── examples/                  # Example implementations
-├── a2a_client.py             # A2A client implementation
-├── requirements.txt          # Python dependencies
-└── .env.example             # Environment variables template
+├── a2a_client.py              # A2A client for testing
+├── requirements.txt           # Python dependencies
+├── CLAUDE.md                  # AI assistant instructions
+└── .env.example              # Environment variables template
 ```
 
 ## Prerequisites
 
-- A Google Cloud account with billing enabled
-- A Google Cloud project with the Vertex AI API enabled
-- Appropriate access to create and manage Vertex AI resources
-- Python 3.9+ environment
-
-## Setting Up Google Cloud Authentication
-
-Before running the agent, you need to set up authentication with Google Cloud:
-
-1. **Install Google Cloud CLI**:
-   - Visit [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) for installation instructions for your OS
-
-2. **Initialize the Google Cloud CLI**:
-   ```bash
-   gcloud init
-   ```
-   This will guide you through logging in and selecting your project.
-
-3. **Set up Application Default Credentials**:
-   ```bash
-   gcloud auth application-default login
-   ```
-   This will open a browser window for authentication and store credentials in:
-   `~/.config/gcloud/application_default_credentials.json`
-
-4. **Verify Authentication**:
-   ```bash
-   gcloud auth list
-   gcloud config list
-   ```
-
-5. **Enable Required APIs** (if not already enabled):
-   ```bash
-   gcloud services enable aiplatform.googleapis.com
-   ```
+- Python 3.9+
+- Google Cloud account with billing enabled
+- Google Cloud project with Vertex AI API enabled
+- Access to create and manage Vertex AI resources
 
 ## Installation
 
 1. **Clone the repository**:
    ```bash
-   git clone git@github.com:einsteindark-edgm/adk-rag-agent.git
-   cd adk-rag-agent
+   git clone git@github.com:AI-NextWorld/agent-customer.git
+   cd agent-customer-tracking
    ```
 
-2. **Set up a virtual environment**:
+2. **Set up virtual environment**:
    ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
-3. **Install Dependencies**:
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Configure Environment**:
+4. **Configure environment**:
    ```bash
    cp .env.example .env
-   # Edit .env with your Google Cloud project details
+   # Edit .env with your configuration
    ```
+
+5. **Set up Google Cloud authentication**:
+   ```bash
+   gcloud auth application-default login
+   gcloud services enable aiplatform.googleapis.com
+   ```
+
+## Configuration
+
+Create a `.env` file with the following variables:
+
+```env
+# Google Cloud Configuration
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_LOCATION=us-central1
+
+# A2A Server Configuration
+A2A_HOST=0.0.0.0
+A2A_PORT=8006
+
+# Agent Configuration
+AGENT_MODEL=gemini-2.0-flash-exp
+
+# Optional: Database Configuration
+DATABASE_URL=postgresql://user:pass@localhost/shipments
+```
 
 ## Running the Agent
 
 ### Start the A2A Server
 
 ```bash
-python -m app.main.a2a_main
+python __main__.py
 ```
 
 The server will start on `http://localhost:8006`
@@ -219,174 +293,115 @@ The server will start on `http://localhost:8006`
 # Interactive mode
 python a2a_client.py
 
-# Test mode
+# Test mode with predefined queries
 python a2a_client.py --test
 ```
 
-### Example Client Usage
+### Example Queries
 
 ```python
-from a2a_client import RAGAgentClient
-import asyncio
+# Check shipment status
+"Where is my package ABC123?"
 
-async def main():
-    client = RAGAgentClient()
-    await client.connect()
-    
-    # Check if import_export corpus exists
-    response = await client.send_message("List all available corpora")
-    print(response)
-    
-    # Query import requirements
-    response = await client.send_message(
-        "What are the requirements for importing textiles to Colombia?"
-    )
-    print(response)
-    
-    # Check restrictions
-    response = await client.send_message(
-        "Are there restrictions on importing used vehicles to Colombia?"
-    )
-    print(response)
-    
-    # Get tariff information
-    response = await client.send_message(
-        "What are the import duties for electronic devices?"
-    )
-    print(response)
-    
-    # Customs procedures
-    response = await client.send_message(
-        "Explain the customs clearance process in Colombia"
-    )
-    print(response)
-    
-    await client.close()
+# Ask about delays
+"Why is my shipment XYZ789 delayed?"
 
-asyncio.run(main())
+# Request ETA update
+"When will my order DEF456 arrive?"
+
+# Express concern
+"My package GHI789 was supposed to arrive yesterday!"
 ```
 
-## Agent Capabilities
+## Agent Communication Tones
 
-The agent specializes in Colombian import regulations and provides:
+The agent adapts its communication tone based on the situation:
 
-### 1. Import Requirements
-Get specific requirements for importing products to Colombia:
-- Documentation needed (commercial invoice, bill of lading, certificates)
-- Permits and licenses required for specific products
-- Special requirements for regulated items
+- **Professional**: Standard updates and inquiries
+- **Apologetic**: Delays over 2 hours or customer frustration
+- **Urgent**: Critical delays for time-sensitive shipments
+- **Reassuring**: Anxious customers or first-time users
+- **Formal**: High-value shipments or business customers
 
-### 2. Tariffs and Taxes
-Information about import costs:
-- Import duties by product category
-- VAT (IVA) calculations
-- Additional taxes and fees
+## Tools Documentation
 
-### 3. Restricted Items
-Verify import restrictions:
-- Prohibited items list
-- Items requiring special permits
-- Sanitary and phytosanitary requirements
+### check_shipment_status
+Retrieves current shipment information including location, status, and original ETA.
 
-### 4. Customs Procedures
-Step-by-step guidance:
-- Import declaration process
-- Customs clearance timelines
-- Required forms and procedures
+### get_anomaly_details
+Fetches details about any anomalies affecting the shipment (delays, issues, etc.).
 
-### 5. Legal Compliance
-Ensure compliance with Colombian law:
-- Import regulations and decrees
-- DIAN (Colombian tax authority) requirements
-- Legal references and updates
+### calculate_new_eta
+Calculates updated delivery time based on current conditions and anomalies.
 
-### 6. Document Management
-Manage the import regulations corpus:
-- Update regulations documents
-- Add new regulatory updates
-- Maintain current import rules
+### generate_customer_message
+Creates appropriately toned messages for customer communication.
+
+## Development
+
+### Adding New Tools
+
+1. Create a new tool in `app/infrastructure/tools/`
+2. Follow the ADK tool pattern with ToolContext
+3. Import and add to agent tools list in `app/infrastructure/agent.py`
+4. Update agent instructions if needed
+
+### Testing
+
+```bash
+# Run unit tests
+python -m pytest tests/
+
+# Run integration tests
+python -m pytest tests/integration/
+
+# Test with mock data
+python a2a_client.py --test
+```
 
 ## Troubleshooting
 
-If you encounter issues:
+### Common Issues
 
-- **Authentication Problems**:
-  - Run `gcloud auth application-default login` again
-  - Check if your service account has the necessary permissions
+1. **Authentication errors**:
+   ```bash
+   gcloud auth application-default login
+   ```
 
-- **API Errors**:
-  - Ensure the Vertex AI API is enabled: `gcloud services enable aiplatform.googleapis.com`
-  - Verify your project has billing enabled
+2. **API not enabled**:
+   ```bash
+   gcloud services enable aiplatform.googleapis.com
+   ```
 
-- **Quota Issues**:
-  - Check your Google Cloud Console for any quota limitations
-  - Request quota increases if needed
+3. **Port already in use**:
+   - Change A2A_PORT in .env file
+   - Or kill the process using the port
 
-- **Missing Dependencies**:
-  - Ensure all requirements are installed: `pip install -r requirements.txt`
+4. **Database connection issues**:
+   - Verify DATABASE_URL in .env
+   - Ensure database is running
 
-## Quick Start Example
+## Contributing
 
-```bash
-# Terminal 1 - Start the server
-python -m app.main.a2a_main
-
-# Terminal 2 - Run test queries
-python -c "
-import asyncio
-from a2a_client import RAGAgentClient
-
-async def test():
-    client = RAGAgentClient()
-    await client.connect()
-    
-    # Ensure import_export corpus exists
-    print(await client.send_message('Create import_export corpus if it doesn\'t exist'))
-    
-    # Quick import query
-    print(await client.send_message(
-        'What documents do I need to import machinery to Colombia?'
-    ))
-    
-    # Check restrictions
-    print(await client.send_message(
-        'Is it legal to import used clothing to Colombia?'
-    ))
-    
-    await client.close()
-
-asyncio.run(test())
-"
-```
-
-## Documentation
-
-Comprehensive documentation is available in the `docs/` directory:
-
-- **[ADK + A2A + Clean Architecture Guide](docs/ADK_A2A_CLEAN_ARCHITECTURE_GUIDE.md)** - Complete integration guide
-- **[Migration Guide](docs/MIGRATION_GUIDE_ADK_TO_A2A.md)** - Migrate existing ADK agents to A2A
-- **[Troubleshooting Guide](docs/TROUBLESHOOTING_A2A_ADK.md)** - Common issues and solutions
-- **[Working Example](docs/WORKING_EXAMPLE_ADK_A2A.md)** - Full working implementation
-- **[Quick Reference](docs/ADK_A2A_QUICK_REFERENCE.md)** - Quick lookup for common patterns
-
-## Additional Resources
-
-- [Vertex AI RAG Documentation](https://cloud.google.com/vertex-ai/generative-ai/docs/rag-overview)
-- [Google Agent Development Kit (ADK) Documentation](https://github.com/google/agents-framework)
-- [Google Cloud Authentication Guide](https://cloud.google.com/docs/authentication)
-- [A2A Protocol Specification](https://github.com/GoogleCloudPlatform/generative-ai/tree/main/a2a)
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
 
-## Contributing
-
-Contributions are welcome! Please read the contributing guidelines before submitting pull requests.
-
 ## Support
 
 For issues and questions:
-- Check the [Troubleshooting Guide](docs/TROUBLESHOOTING_A2A_ADK.md)
-- Review the [documentation](docs/)
+- Check the [CLAUDE.md](CLAUDE.md) file for development guidance
 - Open an issue on GitHub
+- Contact the development team
+
+## Acknowledgments
+
+- Google Agent Development Kit (ADK) team
+- Google Vertex AI team
+- A2A protocol contributors
